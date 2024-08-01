@@ -1,138 +1,103 @@
 // Set up the scene, camera, and renderer
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const width = window.innerWidth;
+const height = window.innerHeight;
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+const nWidth = width / Math.max(width, height) * 10;
+const nHeight = height / Math.max(width, height) * 10;
+//const camera = new THREE.OrthographicCamera(-nWidth / 2, nWidth / 2, nHeight / 2, -nHeight /2, 0.1, 1000);
+scene.add(camera);
+
+camera.position.z = 5;
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const cubeL = 1.0;
-const cubeW = 1.0;
-const cubeH = 1.0;
+// Create a cube
+const bodyGeometry = new THREE.BoxGeometry(1,2)
+//const geometry  = new THREE.SphereGeometry(1, 32, 16);
+//const geometry = new THREE.TorusGeometry(0.8, 0.2, 16, 100)
+const bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+scene.add(body);
 
-// Define the vertices of the square
-const vertices = new Float32Array([
-    -cubeL, cubeW, -cubeH,  // Vertex 0: Top Left
-    -cubeL, -cubeW, -cubeH, // Vertex 1: Bottom Left
-    cubeL, -cubeW, -cubeH,  // Vertex 2: Bottom Right
-    cubeL, cubeW, -cubeH,    // Vertex 3: Top Right
-    -cubeL, cubeW, cubeH,  // Vertex 4: Top Left
-    -cubeL, -cubeW, cubeH, // Vertex 5: Bottom Left
-    cubeL, -cubeW, cubeH,  // Vertex 6: Bottom Right
-    cubeL, cubeW, cubeH    // Vertex 7: Top Right
-]);
+// 2. Create edge geometry and material
+const edgeGeometry = new THREE.EdgesGeometry(bodyGeometry);
+const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }); // Edge color
+const bodyEdges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+scene.add(bodyEdges);
 
-// Define the indices for the two triangles that make up the square
-const indices = [
-    0, 1, 2, // First Triangle: Top Left, Bottom Left, Bottom Right
-    2, 3, 0,  // Second Triangle: Bottom Right, Top Right, Top Left
-    4, 5, 6,
-    6, 7, 4,
-    0, 3, 4,
-    3, 4, 7,
-    1, 2, 5,
-    2, 5, 6,
-    0, 1, 4,
-    1, 4, 5,
-    2, 3, 6,
-    3, 6, 7,
-];
+// 3. sphere geomtery/material
+const sphereGeometry  = new THREE.SphereGeometry(0.5, 32, 16);
+const headMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+const sphereMesh = new THREE.Mesh(sphereGeometry, headMaterial);
+scene.add(sphereMesh);
+sphereMesh.position.y = 1
 
-// Define colors for each vertex
-const colors = new Float32Array([
-    1.0, 0.0, 0.0,  // Color for Vertex 0: Red
-    0.0, 1.0, 0.0,  // Color for Vertex 1: Green
-    0.0, 0.0, 1.0,  // Color for Vertex 2: Blue
-    1.0, 1.0, 0.0,   // Color for Vertex 3: Yellow
-    1.0, 0.0, 0.0,  // Color for Vertex 0: Red
-    0.0, 1.0, 0.0,  // Color for Vertex 1: Green
-    0.0, 0.0, 1.0,  // Color for Vertex 2: Blue
-    1.0, 1.0, 0.0   // Color for Vertex 3: Yellow
-]);
+// 4. arms geometry
+const armGeometry = new THREE.BoxGeometry(0.4, 2, 0.3);
+const leftArm = new THREE.Mesh(armGeometry, bodyMaterial);
+const rightArm = new THREE.Mesh(armGeometry, bodyMaterial);
+const armEdgeGeomtery = new THREE.EdgesGeometry(armGeometry);
+const leftArmEdges = new THREE.LineSegments(armEdgeGeomtery, edgeMaterial);
+const rightArmEdges = new THREE.LineSegments(armEdgeGeomtery, edgeMaterial);
+scene.add(leftArm);
+scene.add(leftArmEdges);
+scene.add(rightArm);
+scene.add(rightArmEdges);
+leftArm.position.set(-0.71, -0.2);
+leftArmEdges.position.set(-0.71, -0.2);
+rightArm.position.set(0.71, -0.2);
+rightArmEdges.position.set(0.71, -0.2);
 
- //more complicated geometry
-/*const vertices = new Float32Array([
-    1.225587, 0.000000, 0.000000,
-    0.408529, 0.408529, 0.000000,
-    0.408529, 0.000000, 0.408529,
-    0.408529, 0.000000, -0.408529,
-    0.408529, -0.408529, 0.000000,
-    -1.225587, 0.000000, 0.000000,
-    -0.408529, 0.408529, 0.000000,
-    -0.408529, 0.000000, 0.408529,
-    -0.408529, -0.408529, 0.000000,
-    -0.408529, 0.000000, -0.408529,
-    0.000000, 1.225587, 0.000000,
-    0.000000, 0.408529, 0.408529,
-    0.000000, 0.408529, -0.408529,
-    0.000000, -1.225587, 0.000000,
-    0.000000, -0.408529, -0.408529,
-    0.000000, -0.408529, 0.408529,
-    0.000000, 0.000000, 1.225587,
-    0.000000, 0.000000, -1.225587]);
+// 5. legs geometry
+const legsGeometry = new THREE.BoxGeometry(0.4, 2.3, 0.3);
+const leftLeg = new THREE.Mesh(legsGeometry, bodyMaterial);
+const rightLeg = new THREE.Mesh(legsGeometry, bodyMaterial);
+const legEdgeGeometry = new THREE.EdgesGeometry(legsGeometry);
+const leftLegEdges = new THREE.LineSegments(legEdgeGeometry, edgeMaterial);
+const rightLegEdges = new THREE.LineSegments(legEdgeGeometry, edgeMaterial);
+scene.add(rightLeg);
+scene.add(rightLegEdges);
+scene.add(leftLeg);
+scene.add(leftLegEdges);
+leftLeg.position.set(-0.25, -0.8);
+leftLegEdges.position.set(-0.25, -0.8);
+rightLeg.position.set(0.25, -0.8);
+rightLegEdges.position.set(0.25, -0.8);
 
-let indices = [
-    2, 1, 4,
-    1, 3, 5,
-    3, 2, 12,
-    1, 2, 3,
-    4, 1, 5,
-    2, 4, 13,
-    5, 3, 16,
-    12, 2, 11,
-    3, 12, 17,
-    4, 5, 15,
-    2, 13, 11,
-    13, 4, 18,
-    5, 16, 14,
-    16, 3, 17,
-    12, 11, 7,
-    17, 12, 8,
-    15, 5, 14,
-    4, 15, 18,
-    11, 13, 7,
-    13, 18, 10,
-    14, 16, 9,
-    16, 17, 8,
-    12, 7, 8,
-    15, 14, 9,
-    18, 15, 10,
-    7, 13, 10,
-    9, 16, 8,
-    8, 7, 6,
-    15, 9, 10,
-    7, 10, 6,
-    9, 8, 6,
-    10, 9, 6,
-];*/
+// use groups
+const group = new THREE.Group();
+const bodyGroup = new THREE.Group();
+const armGroup = new THREE.Group();
+const legGroup = new THREE.Group();
 
-/*indices = indices.map(item => item - 1);
-let colors = new Float32Array(vertices.length)
-for (let i = 0; i < colors.length; i++) {
-    colors[i] = Math.random();
-}*/
+legGroup.add(leftLeg);
+legGroup.add(leftLegEdges);
+legGroup.add(rightLeg);
+legGroup.add(rightLegEdges);
 
-// Create a geometry, add the vertices and colors, and define the faces using indices
-const geometry = new THREE.BufferGeometry();
-geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-geometry.setIndex(indices);
-geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+armGroup.add(leftArm);
+armGroup.add(rightArm);
+armGroup.add(leftArmEdges);
+armGroup.add(rightArmEdges);
 
-// Define a material that uses the vertex colors
-const material = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+bodyGroup.add(body);
+bodyGroup.add(bodyEdges);
+bodyGroup.add(armGroup);
+bodyGroup.add(legGroup);
+bodyGroup.position.y += -0.4;
 
-// Create a mesh with the geometry and material
-const square = new THREE.Mesh(geometry, material);
-scene.add(square);
+group.add(bodyGroup);
+group.add(sphereMesh);
+scene.add(group);
 
-camera.position.z = 3;
 
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
-
-    // Rotate the square
-    square.rotation.x += 0.01;
-    square.rotation.y += 0.01;
+    //group.rotation.x += 0.01;
+    group.rotation.y += 0.01;
 
     renderer.render(scene, camera);
 }
